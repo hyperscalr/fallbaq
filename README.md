@@ -14,19 +14,21 @@ from them.
 
 Background: Most of these systems were designed as message busses for
 high-volume / low-latency message transport. These systems fall short in
-environments where messages may need to be retried. With the nature of the
-internet, downstream consumers may go offline for an unspecified amount of time.
-It is only a matter of time before a downstream consumer goes offline and the
-message queue begins to back up, sending off alarms and waking up SREs and
-developers in the middle of the night. What's more, under a single message bus
-multi-tenant system, a given tenant may overload the message bus, [thus causing
-issues for other tenants](https://segment.com/blog/introducing-centrifuge/).
-Many of us have experienced this first hand in systems such as Kafka and
-Kinesis, where messages must be consumed and acknowledged in sequence. Often, we
-do not want to offload data into a dead letter queue for the sake of continuing
-to make progress on a streaming consumer. We want to retry consuming the
-messages at some point in the future --maybe when the downstream consumer comes
-back online.
+environments where messages may need to be retried
+[[1](https://eng.uber.com/reliable-reprocessing/)]
+[[2](https://docs.particular.net/transports/rabbitmq/delayed-delivery)] . With
+the nature of the internet, downstream consumers may go offline for an
+unspecified amount of time. It is only a matter of time before a downstream
+consumer goes offline and the message queue begins to back up, sending off
+alarms and waking up SREs and developers in the middle of the night. What's
+more, under a single message bus multi-tenant system, a given tenant may
+overload the message bus, [thus causing issues for other
+tenants](https://segment.com/blog/introducing-centrifuge/). Many of us have
+experienced this first hand in systems such as Kafka and Kinesis, where messages
+must be consumed and acknowledged in sequence. Often, we do not want to offload
+data into a dead letter queue for the sake of continuing to make progress on a
+streaming consumer. We want to retry consuming the messages at some point in the
+future --maybe when the downstream consumer comes back online.
 
 I have created previous iterations of this service over the last 14 years. A
 recent one can be found here:
@@ -36,7 +38,7 @@ designed to publish messages as quickly as possible at downstream consumers,
 retrying upon failure - [lazy pirate
 pattern](https://zguide.zeromq.org/docs/chapter4/#Client-Side-Reliability-Lazy-Pirate-Pattern).
 Also, message replication was achieved at the data storage layer instead of
-clustering amongst a group of nodes [1](https://aws.amazon.com/efs/). Message
+clustering amongst a group of nodes [[1](https://aws.amazon.com/efs/)]. Message
 replication as disk replication eventually proved too costly. What's more, in a
 pub-sub system, the message flow rate can be challenging to tune correctly. This
 is where systems such as Kafka and Kinesis shine to allow the consumption of
@@ -108,3 +110,5 @@ that meets the following requirements.
 - [ ] Messages should be encrypted in transit and at rest.
 - [ ] Producers should be able to write batches of messages that are committed
       atomically by the distributed log.
+- [ ] Authentication and authorization should be provided via mTLS.
+- [ ] Client APIs should be guarded by configurable permissions.
